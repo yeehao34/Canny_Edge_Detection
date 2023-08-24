@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES 
 #define KERNEL_SIZE 3
 #include <cmath>
-#include "canny.h"
+#include "cannyEdge.h"
 #include <iostream>
 #include <math.h>
 

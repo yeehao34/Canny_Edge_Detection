@@ -4,8 +4,10 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-#include "canny.h"
+#include "cannyEdge.h"
 #include <chrono> // time/clocks
+
+using namespace std;
 
 int low_threshold = 30;
 int high_threshold = 90;
@@ -85,8 +87,12 @@ void doTransform(std::string file_path) {
 
     cv::Mat img_ori = cv::imread(file_path, 1);
 
-    cv::cvtColor(img_ori, img_gray, cv::COLOR_BGR2GRAY);
-
+    try {
+        cv::cvtColor(img_ori, img_gray, cv::COLOR_BGR2GRAY);
+    }
+    catch (cv::Exception& e) {
+        cerr << e.msg << endl;
+    }
     int w = img_gray.cols;
     int h = img_ori.rows;
 
