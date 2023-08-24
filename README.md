@@ -21,4 +21,5 @@
 18. Click "Apply" and "OK"
 19. Select "Release" as the "Active solution configuration" instead of "Debug"
 
+![2023-08-24 23 55 42](https://github.com/yeehao34/Canny_Edge_Detection/assets/88917687/f828ab6a-8b1f-4267-9101-5bf98efa60c2)
 
