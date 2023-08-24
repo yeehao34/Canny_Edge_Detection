@@ -7,15 +7,15 @@
 4. Setup project properties
 5. Choose "All Configurations" as the configuration and "x64" as the Platform
 6. Open "C/C++" tab and click "General"
-7. Add Additional Include Directories, copy the path of "opencv\build\include" and paste it, click "Ok"
+7. Remove the original one and add Additional Include Directories, copy the path of "opencv\build\include" and paste it, click "Ok". 
 8. Open "Linker" tab and click "General"
-9. Add Additional Library Directories, copy the path of "opencv\build\x64\vc{based on your version downloaded}\lib" and paste it
+9. Remove the original one and add Additional Library Directories, copy the path of "opencv\build\x64\vc{based on your version downloaded}\lib" and paste it
 10. Open "Debugging" tab 
 11. Add Environment, type "PATH={your opencv directory}\build\x64\vc{based on your version downloaded}\bin;%PATH%", click "OK"
 12. Click on the "Configuration Manager" at the top right corner
 13. Make sure the both platform (Active solution platform and Platform) is "x64", then close it
 14. Change configuration to "Debug" as the configuration and Open "Linker" tab and click "Input"
-15. Add Additional Dependencies, copy and paste the "opencv_world{version}d.lib", verify the filename at "opencv\build\x64\vc{based on your version downloaded}\lib", click "OK" 
+15. Remove the original one and add Additional Dependencies, copy and paste the "opencv_world{version}d.lib", verify the filename at "opencv\build\x64\vc{based on your version downloaded}\lib", click "OK" 
 16. Choose "Release" as the configuration and Open "Linker" tab and click "Input"
 17. same as Step 15 but the filename is without the 'd'
 18. Click "Apply" and "OK"
