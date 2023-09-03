@@ -108,7 +108,7 @@ void doTransform(std::string file_path) {
         //stop timer
         std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-        printf("Time taken by Serial implementation: %.2f\n", duration / 1000.0f);
+        printf("Time taken by Serial implementation: %.6f\n", duration / 1000000.0f);
 
         // Visualize all
         cv::imshow(CW_IMG_ORIGINAL, img_ori);

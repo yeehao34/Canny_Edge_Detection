@@ -1,5 +1,6 @@
 # Canny_Edge_Detection
 
+*Note: This setup is required as need to include opencv
 # ------- Environment Setup --------
 1. Download opencv from https://opencv.org/releases/ by selecting Windows
 2. Extract the zip file
