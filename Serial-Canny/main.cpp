@@ -42,36 +42,36 @@ int main(int argc, char** argv) {
     switch (image_choice)
     {
     case 1:
-        doTransform("img/640x480.jpg");
+        doTransform("../img/640x480.jpg");
         break;
     case 2:
-        doTransform("img/1280x720.jpg");
+        doTransform("../img/1280x720.jpg");
         break;
     case 3:
-        doTransform("img/1920x1080.jpg");
+        doTransform("../img/1920x1080.jpg");
         break;
     case 4:
-        doTransform("img/2560x1440.jpg");
+        doTransform("../img/2560x1440.jpg");
         break;
     case 5:
-        doTransform("img/3840x2160.jpg");
+        doTransform("../img/3840x2160.jpg");
         break;
     case 6:
-        doTransform("img/7680x4320.jpg");
+        doTransform("../img/7680x4320.jpg");
         break;
     case 7:
         std::cout << "Running 640x480.jpg     :";
-        doTransform("img/640x480.jpg");
+        doTransform("../img/640x480.jpg");
         std::cout << "Running 1280x720.jpg     :";
-        doTransform("img/1280x720.jpg");
+        doTransform("../img/1280x720.jpg");
         std::cout << "Running 1920x1080.jpg     :";
-        doTransform("img/1920x1080.jpg");
+        doTransform("../img/1920x1080.jpg");
         std::cout << "Running 2560x1440.jpg     :";
-        doTransform("img/2560x1440.jpg");
+        doTransform("../img/2560x1440.jpg");
         std::cout << "Running 3840x2160.jpg     :";
-        doTransform("img/3840x2160.jpg");
+        doTransform("../img/3840x2160.jpg");
         std::cout << "Running 7680x4320.jpg     :";
-        doTransform("img/7680x4320.jpg");
+        doTransform("../img/7680x4320.jpg");
         break;
     default:
         break;
