@@ -103,6 +103,22 @@ int main(int argc, char** argv) {
 	MPI_Bcast(&w, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&h, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
+	// Assign each process should handle how many row
+	int totalRowsDivided = h / size;
+	totalRowsDivided *= size;
+	int* rows_per_process = (int*)malloc(sizeof(int) * size);
+	int* displacements = (int*)malloc(sizeof(int) * size);
+
+	for (int i = 0; i < size; i++) {
+		rows_per_process[i] = h / size;
+		displacements[i] = i * rows_per_process[i];
+	}
+
+	// the last process covers the remaining extra rows
+	if (rank == size - 1 && totalRowsDivided < h) {
+		rows_per_process[size - 1] = rows_per_process[size - 1] + h - totalRowsDivided;
+	}
+
 	//int MPI_Scatterv(
 	//	void* sendbuf,				--> the entire data: img_gray.data
 	//	int* sendcnts,				--> the respective count send to respective processor
@@ -115,40 +131,59 @@ int main(int argc, char** argv) {
 	//	MPI_Comm comm				--> MPI_COMM_WORLD
 	//);
 
-	int totalRowsDivided = h / size;
-	totalRowsDivided *= size;
-	int* rows_per_process = new int[size];
-	int* displacements = new int[size];
+	// define the size for recv_buffer 
+	uchar* recv_buffer = (uchar*)malloc(sizeof(uchar) * rows_per_process[rank]);
 
-	for (int i = 0; i < size; i++) {
-		rows_per_process[i] = h / size;
-		displacements[i] = i * rows_per_process[i];
-	}
-
-	if (rank == size - 1 && totalRowsDivided < h) {
-		rows_per_process[size - 1] = h - 
-	}
+	MPI_Scatterv(img_gray.data, rows_per_process, displacements, MPI_UNSIGNED_CHAR,
+		recv_buffer, rows_per_process[rank], MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
 
 
-	//printf("Time taken by MPI Implementation: %.6f\n", );
+	cv::Mat local_img_edge(rows_per_process[rank], w, CV_8UC1, cv::Scalar::all(0));
+	apply_canny(local_img_edge.data, recv_buffer, low_threshold, high_threshold, w, rows_per_process[rank]);
 
-	// Visualize all
+
+	//int MPI_Gatherv(
+	//	void* sendbuf,				--> sendbuf is the one that going to gather
+	//	int sendcnt,				
+	//	MPI_Datatype sendtype,
+	//	void* recvbuf,				--> recvbuf is the one that gathered all the sendbuf
+	//	int* recvcnts,
+	//	int* displs,
+	//	MPI_Datatype recvtype,
+	//	int root,
+	//	MPI_Comm comm
+	//);
+
+	uchar* image_buffer = (uchar*)malloc(sizeof(uchar) * h);
+	MPI_Gatherv(recv_buffer, rows_per_process[rank], MPI_UNSIGNED_CHAR,
+		image_buffer, rows_per_process, displacements, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+	cv::Mat img_edge(h, w, CV_8UC1, image_buffer);
+	////printf("Time taken by MPI Implementation: %.6f\n", );
 	if (rank == 0) {
-		cv::imshow(CW_IMG_ORIGINAL, img_ori);
-		cv::imshow(CW_IMG_GRAY, img_gray);
-		cv::imshow(CW_IMG_EDGE, img_chunk_edge);
-
-		// wait for user input within 6 minutes 
-		char c = cv::waitKey(360000);
-
-		if (c == 's') {
-			cv::imwrite("canny.png", img_chunk_edge);
-			std::cout << "write canny.png done..." << std::endl;
-		}
+		cv::imwrite("canny.png", img_edge);
 	}
+	//// Visualize all
+	//if (rank == 0) {
+	//	cv::imshow(CW_IMG_ORIGINAL, img_ori);
+	//	cv::imshow(CW_IMG_GRAY, img_gray);
+	//	cv::imshow(CW_IMG_EDGE, img_edge);
+
+	//	// wait for user input within 6 minutes 
+	//	char c = cv::waitKey(360000);
+
+	//	if (c == 's') {
+	//		cv::imwrite("canny.png", img_edge);
+	//		std::cout << "write canny.png done..." << std::endl;
+	//	}
+	//}
 
 	cv::destroyAllWindows();
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Finalize();
+	//free(rows_per_process);
+	//free(displacements);
+	//free(recv_buffer);
+	//free(image_buffer);
+
 	return 0;
 }

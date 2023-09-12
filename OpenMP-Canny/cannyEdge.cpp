@@ -4,7 +4,9 @@
 #include "cannyEdge.h"
 #include <iostream>
 #include <math.h>
-#include <mpi.h>
+#include "omp.h"
+#include <chrono>
+using namespace std::chrono;
 
 void apply_canny(uint8_t* dst, const uint8_t* src, int weak_threshold, int strong_threshold, int image_width, int image_height) {
 	double gaussian_kernel[9] = {
@@ -12,10 +14,10 @@ void apply_canny(uint8_t* dst, const uint8_t* src, int weak_threshold, int stron
 		2,4,2,
 		1,2,1
 	};
-
+	omp_set_num_threads(4);
 	double* gradient_pixels = new double[image_width * image_height];
-	double* matrix_pixels = new double[image_width * image_height];
 	uint8_t* segment_pixels = new uint8_t[image_width * image_height];
+	double* matrix_pixels = new double[image_width * image_height];
 	uint8_t* double_thres_pixels = new uint8_t[image_width * image_height];
 
 	// 1. gaussian filter
@@ -38,12 +40,12 @@ void apply_canny(uint8_t* dst, const uint8_t* src, int weak_threshold, int stron
 
 void apply_gaussian_filter(uint8_t* out_pixels, const uint8_t* in_pixels, int image_width, int image_height, double* kernel)
 {
-
 	int rows = image_height;
 	int cols = image_width;
 	const int offset_xy = ((KERNEL_SIZE - 1) / 2);
 
 	//Apply Kernel to image
+#pragma omp parallel for
 	for (int pixNum = 0; pixNum < image_height * image_width; pixNum++) {
 		double kernelSum = 0;
 		double pixelVal = 0;
@@ -63,47 +65,6 @@ void apply_gaussian_filter(uint8_t* out_pixels, const uint8_t* in_pixels, int im
 		}
 		out_pixels[pixNum] = (uint8_t)(pixelVal / kernelSum);
 	}
-	//int world_rank, world_size;
-	//MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-	//MPI_Comm_size(MPI_COMM_WORLD, &world_size); // size is the number of processes
-
-	//const int offset_xy = ((KERNEL_SIZE - 1) / 2);
-	//// Divide the rows among processes
-	//int rows_per_process = image_height / world_size;
-
-	//// Calculate the starting and ending row for this process
-	//int start_row = world_rank * rows_per_process;
-	//// If is last process, assign the end row with the image_height
-	//// If is not, based on the rank of the process to determine the end_row
-	//int end_row = (world_rank == world_size - 1) ? image_height : (start_row + rows_per_process);
-
-	//// If the image_height cannot be divided equally, last process will handle the remaining extra rows
-	//if (world_rank == world_size - 1 && end_row < image_height) {
-	//	end_row = image_height;
-	//	rows_per_process = end_row - start_row;
-	//}
-
-	////Apply Kernel to image for the assigned rows
-	//for (int row = start_row; row < end_row; row++) {
-	//	for (int col = 0; col < image_width; col++) {
-	//		double kernelSum = 0;
-	//		double pixelVal = 0;
-	//		for (int i = 0; i < KERNEL_SIZE; i++) {
-	//			for (int j = 0; j < KERNEL_SIZE; j++) {
-	//				int neighbor_row = row + i - offset_xy;
-	//				int neighbor_col = col + j - offset_xy;
-	//				// Check if the neighbor pixel is within bounds
-	//				if (neighbor_row >= 0 && neighbor_row < image_height &&
-	//					neighbor_col >= 0 && neighbor_col < image_width) {
-	//					pixelVal += kernel[i * KERNEL_SIZE * j] * in_pixels[neighbor_row * image_width + neighbor_col];
-	//					kernelSum += kernel[i * KERNEL_SIZE * j];
-	//				}
-	//			}
-	//		}
-	//		out_pixels[row * image_width + col] = (uint8_t)(pixelVal / kernelSum);
-	//	}
-	//}
-
 }
 void apply_sobel_filter(double* out_gradient, uint8_t* out_segment, const uint8_t* in, int image_width, int image_height) {
 	//Sobel
@@ -114,6 +75,7 @@ void apply_sobel_filter(double* out_gradient, uint8_t* out_segment, const uint8_
 						  0, 0, 0,
 						 -1,-2,-1 };
 	int offset_xy = 1;  // 3x3
+#pragma omp parallel for
 	for (int x = offset_xy; x < image_width - offset_xy; x++) {
 		for (int y = offset_xy; y < image_height - offset_xy; y++) {
 			double convolve_X = 0.0;
@@ -157,6 +119,7 @@ void apply_sobel_filter(double* out_gradient, uint8_t* out_segment, const uint8_
 }
 void apply_non_max_suppression(double* out_M, double* in_gradient, uint8_t* in_segment, int image_width, int image_height) {
 	memcpy(out_M, in_gradient, image_width * image_height * sizeof(double));
+#pragma omp parallel for
 	for (int x = 1; x < image_width - 1; x++) {
 		for (int y = 1; y < image_height - 1; y++) {
 			int pos = x + (y * image_width);
@@ -185,22 +148,24 @@ void apply_non_max_suppression(double* out_M, double* in_gradient, uint8_t* in_s
 		}
 	}
 }
-void apply_double_threshold(uint8_t* dst, double* M_, int strong_threshold, int weak_threshold, int image_width, int image_height) {
+void apply_double_threshold(uint8_t* out, double* M_, int strong_threshold, int weak_threshold, int image_width, int image_height) {
+#pragma omp parallel for
 	for (int x = 0; x < image_width; x++) {
 		for (int y = 0; y < image_height; y++) {
 			int src_pos = x + (y * image_width);
 			if (M_[src_pos] > strong_threshold)
-				dst[src_pos] = 255;      //absolutely edge
+				out[src_pos] = 255;      //absolutely edge
 			else if (M_[src_pos] > weak_threshold)
-				dst[src_pos] = 100;      //potential edge
+				out[src_pos] = 100;      //potential edge
 			else
-				dst[src_pos] = 0;       //absolutely not edge
+				out[src_pos] = 0;       //absolutely not edge
 		}
 	}
 }
 
 void apply_edge_hysteresis(uint8_t* dst, uint8_t* in, int image_width, int image_height) {
 	memcpy(dst, in, image_width * image_height * sizeof(uint8_t));
+#pragma omp parallel for
 	for (int x = 1; x < image_width - 1; x++) {
 		for (int y = 1; y < image_height - 1; y++) {
 			int src_pos = x + (y * image_width);
