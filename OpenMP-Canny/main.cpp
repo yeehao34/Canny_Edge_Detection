@@ -72,6 +72,7 @@ bool image_equal(const cv::Mat& a, const cv::Mat& b)
 	if ((a.rows != b.rows) || (a.cols != b.cols))
 		return false;
 	cv::Scalar s = sum(a - b);
+	std::cout << s[0] << "+" << s[1] << "+" << s[2] << std::endl;
 	return (s[0] == 0) && (s[1] == 0) && (s[2] == 0);
 }
 
@@ -91,7 +92,9 @@ void doTransform(std::string file_path) {
 	double start_time = omp_get_wtime();
 	apply_canny(img_edge.data, img_gray.data, low_threshold, high_threshold, w, h);
 	double run_time = omp_get_wtime() - start_time;
-	std::cout << "run time: " << run_time * 1000 << "ms" << std::endl;
+	// 640 x 480 -  0.012218 seconds
+
+	std::cout << "run time: " << run_time << " seconds" << std::endl;
 
 	cv::imwrite(save_path, img_edge);
 	cv::Mat test_img_true = cv::imread(true_path, 1);
@@ -109,11 +112,6 @@ void doTransform(std::string file_path) {
 
 	// wait for user input within 6 minutes 
 	char c = cv::waitKey(360000);
-
-	if (c == 's') {
-		cv::imwrite("canny.png", img_edge);
-		std::cout << "write canny.png done..." << std::endl;
-	}
 
 	if (c == 27) return;
 

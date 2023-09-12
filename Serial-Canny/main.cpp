@@ -19,48 +19,48 @@ const char* CW_IMG_EDGE = "Canny Edge Detection";
 void doTransform(std::string);
 
 int main(int argc, char** argv) {
-	cv::namedWindow(CW_IMG_ORIGINAL, cv::WINDOW_NORMAL);
-	cv::namedWindow(CW_IMG_GRAY, cv::WINDOW_NORMAL);
-	cv::namedWindow(CW_IMG_EDGE, cv::WINDOW_NORMAL);
-	cv::resizeWindow(CW_IMG_ORIGINAL, 1280, 720);
-	cv::resizeWindow(CW_IMG_GRAY, 1280, 720);
-	cv::resizeWindow(CW_IMG_EDGE, 1280, 720);
-	cv::moveWindow(CW_IMG_ORIGINAL, 10, 10);
-	cv::moveWindow(CW_IMG_GRAY, 680, 10);
-	cv::moveWindow(CW_IMG_EDGE, 1350, 10);
+		cv::namedWindow(CW_IMG_ORIGINAL, cv::WINDOW_NORMAL);
+		cv::namedWindow(CW_IMG_GRAY, cv::WINDOW_NORMAL);
+		cv::namedWindow(CW_IMG_EDGE, cv::WINDOW_NORMAL);
+		cv::resizeWindow(CW_IMG_ORIGINAL, 1280, 720);
+		cv::resizeWindow(CW_IMG_GRAY, 1280, 720);
+		cv::resizeWindow(CW_IMG_EDGE, 1280, 720);
+		cv::moveWindow(CW_IMG_ORIGINAL, 10, 10);
+		cv::moveWindow(CW_IMG_GRAY, 680, 10);
+		cv::moveWindow(CW_IMG_EDGE, 1350, 10);
 
-	int image_choice;
-	std::cout << "Select image to do canny edge detection : " << std::endl;
-	std::cout << "1. 640x480.jpg" << std::endl;
-	std::cout << "2. 1280x720.jpg" << std::endl;
-	std::cout << "3. 1920x1080.jpg" << std::endl;
-	std::cout << "4. 2560x1440.jpg" << std::endl;
-	std::cout << "5. 3840x2160.jpg" << std::endl;
-	std::cout << "6. 7680x4320.jpg" << std::endl;
-	std::cin >> image_choice;
-	switch (image_choice)
-	{
-	case 1:
-		doTransform("../img/640x480.jpg");
-		break;
-	case 2:
-		doTransform("../img/1280x720.jpg");
-		break;
-	case 3:
-		doTransform("../img/1920x1080.jpg");
-		break;
-	case 4:
-		doTransform("../img/2560x1440.jpg");
-		break;
-	case 5:
-		doTransform("../img/3840x2160.jpg");
-		break;
-	case 6:
-		doTransform("../img/7680x4320.jpg");
-		break;
-	default:
-		break;
-	}
+		int image_choice;
+		std::cout << "Select image to do canny edge detection : " << std::endl;
+		std::cout << "1. 640x480.jpg" << std::endl;
+		std::cout << "2. 1280x720.jpg" << std::endl;
+		std::cout << "3. 1920x1080.jpg" << std::endl;
+		std::cout << "4. 2560x1440.jpg" << std::endl;
+		std::cout << "5. 3840x2160.jpg" << std::endl;
+		std::cout << "6. 7680x4320.jpg" << std::endl;
+		std::cin >> image_choice;
+		switch (image_choice)
+		{
+		case 1:
+			doTransform("../img/640x480.jpg");
+			break;
+		case 2:
+			doTransform("../img/1280x720.jpg");
+			break;
+		case 3:
+			doTransform("../img/1920x1080.jpg");
+			break;
+		case 4:
+			doTransform("../img/2560x1440.jpg");
+			break;
+		case 5:
+			doTransform("../img/3840x2160.jpg");
+			break;
+		case 6:
+			doTransform("../img/7680x4320.jpg");
+			break;
+		default:
+			break;
+		}
 
 	cv::destroyAllWindows();
 	return 0;
@@ -97,8 +97,10 @@ void doTransform(std::string file_path) {
 
 	//stop timer
 	std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-	printf("Time taken by Serial implementation: %.6f\n", duration / 1000000.0f);
+	std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+	// 640 x 480: Time taken by Serial implementation: 0.026303 seconds
+	// 7680 x 4320: Time taken by Serial implementation: 2.686465 seconds
+	printf("Time taken by Serial implementation: %.6f seconds\n", time_span);
 
 	// Visualize all
 	cv::imshow(CW_IMG_ORIGINAL, img_ori);

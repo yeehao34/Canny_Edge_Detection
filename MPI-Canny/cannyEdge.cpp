@@ -4,7 +4,6 @@
 #include "cannyEdge.h"
 #include <iostream>
 #include <math.h>
-#include <mpi.h>
 
 void apply_canny(uint8_t* dst, const uint8_t* src, int weak_threshold, int strong_threshold, int image_width, int image_height) {
 	double gaussian_kernel[9] = {
@@ -63,47 +62,6 @@ void apply_gaussian_filter(uint8_t* out_pixels, const uint8_t* in_pixels, int im
 		}
 		out_pixels[pixNum] = (uint8_t)(pixelVal / kernelSum);
 	}
-	//int world_rank, world_size;
-	//MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-	//MPI_Comm_size(MPI_COMM_WORLD, &world_size); // size is the number of processes
-
-	//const int offset_xy = ((KERNEL_SIZE - 1) / 2);
-	//// Divide the rows among processes
-	//int rows_per_process = image_height / world_size;
-
-	//// Calculate the starting and ending row for this process
-	//int start_row = world_rank * rows_per_process;
-	//// If is last process, assign the end row with the image_height
-	//// If is not, based on the rank of the process to determine the end_row
-	//int end_row = (world_rank == world_size - 1) ? image_height : (start_row + rows_per_process);
-
-	//// If the image_height cannot be divided equally, last process will handle the remaining extra rows
-	//if (world_rank == world_size - 1 && end_row < image_height) {
-	//	end_row = image_height;
-	//	rows_per_process = end_row - start_row;
-	//}
-
-	////Apply Kernel to image for the assigned rows
-	//for (int row = start_row; row < end_row; row++) {
-	//	for (int col = 0; col < image_width; col++) {
-	//		double kernelSum = 0;
-	//		double pixelVal = 0;
-	//		for (int i = 0; i < KERNEL_SIZE; i++) {
-	//			for (int j = 0; j < KERNEL_SIZE; j++) {
-	//				int neighbor_row = row + i - offset_xy;
-	//				int neighbor_col = col + j - offset_xy;
-	//				// Check if the neighbor pixel is within bounds
-	//				if (neighbor_row >= 0 && neighbor_row < image_height &&
-	//					neighbor_col >= 0 && neighbor_col < image_width) {
-	//					pixelVal += kernel[i * KERNEL_SIZE * j] * in_pixels[neighbor_row * image_width + neighbor_col];
-	//					kernelSum += kernel[i * KERNEL_SIZE * j];
-	//				}
-	//			}
-	//		}
-	//		out_pixels[row * image_width + col] = (uint8_t)(pixelVal / kernelSum);
-	//	}
-	//}
-
 }
 void apply_sobel_filter(double* out_gradient, uint8_t* out_segment, const uint8_t* in, int image_width, int image_height) {
 	//Sobel

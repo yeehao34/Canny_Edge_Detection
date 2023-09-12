@@ -21,13 +21,13 @@ void apply_canny(uint8_t* dst, const uint8_t* src, int weak_threshold, int stron
 
 	// 1. gaussian filter
 	apply_gaussian_filter(dst, src, image_width, image_height, gaussian_kernel);
-	// 2.apply sobel kernels
+//	// 2.apply sobel kernels
 	apply_sobel_filter(gradient_pixels, segment_pixels, dst, image_width, image_height);
-	// 3. local maxima: non maxima suppression
+//	// 3. local maxima: non maxima suppression
 	apply_non_max_suppression(matrix_pixels, gradient_pixels, segment_pixels, image_width, image_height);
-	// 4. double threshold
+//	// 4. double threshold
 	apply_double_threshold(double_thres_pixels, matrix_pixels, strong_threshold, weak_threshold, image_width, image_height);
-	// 5. edges with hysteresis
+//	// 5. edges with hysteresis
 	apply_edge_hysteresis(dst, double_thres_pixels, image_width, image_height);
 
 	delete[] gradient_pixels;
