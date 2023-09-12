@@ -5,6 +5,8 @@
 #include <iostream>
 #include <math.h>
 
+// 1st param: destination	--> img_edge
+// 2nd param: source		--> img_gray
 void apply_canny(uint8_t* dst, const uint8_t* src, int weak_threshold, int strong_threshold, int image_width, int image_height) {
 	double gaussian_kernel[9] = {
 		1,2,1,
