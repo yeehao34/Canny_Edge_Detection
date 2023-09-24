@@ -4,11 +4,12 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "cannyEdge.h"
 #include <string>
+#include <iomanip>
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-int low_threshold = 30;
-int high_threshold = 90;
+int low_threshold = 20;
+int high_threshold = 60;
 
 const char *CW_IMG_ORIGINAL = "Original";
 const char *CW_IMG_GRAY = "Grayscale";
@@ -38,14 +39,15 @@ int main(int argc, char **argv)
 
 	// std::string img_path = "img/";
 	int image_choice;
+	std::cout << "       Image Dimensions      " << std::endl;
+	std::cout << "#~~~~~~~~~~~~~~~~~~~~~~~~~~~~#" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "1." << std::setw(23) << "640x480.jpg" << " |" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "2." << std::setw(23) << "1280x720.jpg" << " |" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "3." << std::setw(23) << "1920x1080.jpg" << " |" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "4." << std::setw(23) << "2560x1440.jpg" << " |" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "5." << std::setw(23) << "3840x2160.jpg" << " |" << std::endl;
+	std::cout << "#~~~~~~~~~~~~~~~~~~~~~~~~~~~~#" << std::endl;
 	std::cout << "Select image to do canny edge detection : " << std::endl;
-	std::cout << "1. 640x480.jpg" << std::endl;
-	std::cout << "2. 1280x720.jpg" << std::endl;
-	std::cout << "3. 1920x1080.jpg" << std::endl;
-	std::cout << "4. 2560x1440.jpg" << std::endl;
-	std::cout << "5. 3840x2160.jpg" << std::endl;
-	std::cout << "6. 7680x4320.jpg" << std::endl;
-	std::cout << "7. Run all" << std::endl;
 	std::cin >> image_choice;
 	std::string filepath = "";
 	switch (image_choice)
@@ -64,9 +66,6 @@ int main(int argc, char **argv)
 		break;
 	case 5:
 		filepath = "3840x2160";
-		break;
-	case 6:
-		filepath = "7680x4320";
 		break;
 	default:
 		break;

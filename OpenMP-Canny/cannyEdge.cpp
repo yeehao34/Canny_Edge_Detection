@@ -14,7 +14,7 @@ void apply_canny(uint8_t* dst, const uint8_t* src, int weak_threshold, int stron
 		2,4,2,
 		1,2,1
 	};
-	omp_set_num_threads(4);
+	omp_set_num_threads(9);
 	double* gradient_pixels = new double[image_width * image_height];
 	uint8_t* segment_pixels = new uint8_t[image_width * image_height];
 	double* matrix_pixels = new double[image_width * image_height];
