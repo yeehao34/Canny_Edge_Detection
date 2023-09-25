@@ -7,7 +7,6 @@
 #include "cannyEdge.h"
 #include <string>
 #include "mpi.h"
-#define KERNEL_SIZE 3
 
 int low_threshold = 20;
 int high_threshold = 60;
@@ -15,8 +14,6 @@ int high_threshold = 60;
 const char* CW_IMG_ORIGINAL = "Original";
 const char* CW_IMG_GRAY = "Grayscale";
 const char* CW_IMG_EDGE = "Canny Edge Detection";
-
-bool image_equal(const cv::Mat& a, const cv::Mat& b);
 
 int main(int argc, char** argv) {
 	int rank = 0, size = 0;
@@ -107,19 +104,41 @@ int main(int argc, char** argv) {
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	double begin = MPI_Wtime();
-	int rows_per_rank = h / size;
-	int start_row = rank * rows_per_rank;
-	int end_row = (rank == size - 1) ? h : start_row + rows_per_rank;
+
+	int* scounts = (int*)malloc(size * sizeof(int));
+	int* displs = (int*)malloc(size * sizeof(int));
+	assert(scouts != NULL);
+	assert(displs != NULL);
+
+	// Assign each process should handle how many row
+	int rows_per_process = h / size;
+	int remainder = h % size;
+
+	for (int i = 0; i < size; i++) {
+		if (i == size - 1) {
+			// Last process handle the extra rows
+			scounts[i] = rows_per_process + remainder;
+		}
+		else {
+			// Others will get the same number of rows
+			scounts[i] = rows_per_process;
+		}
+		scounts[i] *= w;
+
+		displs[i] = (i > 0) ? displs[i - 1] + scounts[i - 1] : 0;
+	}
+
 
 	// Data being distributed to each process
-	cv::Mat local_img(rows_per_rank, w, CV_8UC1);
+	cv::Mat local_img(scounts[rank], w, CV_8UC1);
 
 	// Distribute image chunks between processors
-	MPI_Scatter(img_gray.data, w * rows_per_rank, MPI_UNSIGNED_CHAR, local_img.data, w * rows_per_rank, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+	MPI_Scatterv(img_gray.data, scounts, displs, MPI_UNSIGNED_CHAR, local_img.data, scounts[rank], MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
 
-	cv::Mat partialImg(rows_per_rank, w, CV_8UC1);
 
-	apply_canny(partialImg.data, local_img.data, low_threshold, high_threshold, w, rows_per_rank);
+	cv::Mat partialImg(rows_per_process, w, CV_8UC1);
+
+	apply_canny(partialImg.data, local_img.data, low_threshold, high_threshold, w, rows_per_process);
 
 	cv::Mat processed_img;
 
@@ -127,7 +146,8 @@ int main(int argc, char** argv) {
 		processed_img = cv::Mat(h, w, CV_8UC1);
 	}
 
-	MPI_Gather(partialImg.data, w * rows_per_rank, MPI_UNSIGNED_CHAR, processed_img.data, w * rows_per_rank, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+	MPI_Gatherv(partialImg.data, scounts[rank], MPI_UNSIGNED_CHAR, processed_img.data, scounts, displs, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+
 	MPI_Barrier(MPI_COMM_WORLD);
 	double end = MPI_Wtime();
 	double time_elapsed = end - begin;
@@ -145,16 +165,11 @@ int main(int argc, char** argv) {
 		cv::imshow(CW_IMG_EDGE, processed_img);
 
 		std::string true_path = "../img/true/" + filepath;
-		std::string save_path = "saved_MPI_Scatter/" + filepath;
+		std::string save_path = "saved/" + filepath;
 
 		cv::imwrite(save_path, processed_img);
 		cv::Mat test_img_true = cv::imread(true_path, 1);
 		cv::Mat test_img_edge = cv::imread(save_path, 1);
-
-		if (image_equal(test_img_edge, test_img_true))
-		{
-			std::cout << "correct edge result" << std::endl;
-		}
 
 		char c = cv::waitKey(360000);
 
@@ -163,16 +178,8 @@ int main(int argc, char** argv) {
 		}
 	}
 	MPI_Finalize();
+	free(scounts);
+	free(displs);
 
 	return 0;
-}
-
-bool image_equal(const cv::Mat& a, const cv::Mat& b)
-{
-	if ((a.rows != b.rows) || (a.cols != b.cols)) {
-		return false;
-	}
-	cv::Scalar s = sum(a - b);
-	std::cout << s[0] << "+" << s[1] << "+" << s[2] << std::endl;
-	return (s[0] == 0) && (s[1] == 0) && (s[2] == 0);
 }

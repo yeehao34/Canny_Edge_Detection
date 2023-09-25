@@ -67,15 +67,6 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-bool image_equal(const cv::Mat& a, const cv::Mat& b)
-{
-	if ((a.rows != b.rows) || (a.cols != b.cols))
-		return false;
-	cv::Scalar s = sum(a - b);
-	std::cout << s[0] << "+" << s[1] << "+" << s[2] << std::endl;
-	return (s[0] == 0) && (s[1] == 0) && (s[2] == 0);
-}
-
 void doTransform(std::string file_path) {
 	cv::Mat img_gray;
 
@@ -97,13 +88,6 @@ void doTransform(std::string file_path) {
 	std::cout << "run time: " << run_time << " seconds" << std::endl;
 
 	cv::imwrite(save_path, img_edge);
-	cv::Mat test_img_true = cv::imread(true_path, 1);
-	cv::Mat test_img_edge = cv::imread(save_path, 1);
-
-	if (image_equal(test_img_edge, test_img_true))
-	{
-		std::cout << "correct edge result" << std::endl;
-	}
 
 	// Visualize all
 	cv::imshow(CW_IMG_ORIGINAL, img_ori);

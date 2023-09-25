@@ -9,8 +9,8 @@
 
 using namespace std;
 
-int low_threshold = 30;
-int high_threshold = 90;
+int low_threshold = 20;
+int high_threshold = 60;
 
 const char* CW_IMG_ORIGINAL = "Original";
 const char* CW_IMG_GRAY = "Grayscale";

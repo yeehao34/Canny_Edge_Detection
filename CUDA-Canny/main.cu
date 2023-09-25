@@ -41,11 +41,16 @@ int main(int argc, char **argv)
 	int image_choice;
 	std::cout << "       Image Dimensions      " << std::endl;
 	std::cout << "#~~~~~~~~~~~~~~~~~~~~~~~~~~~~#" << std::endl;
-	std::cout << "| " << std::left << std::setw(3) << "1." << std::setw(23) << "640x480.jpg" << " |" << std::endl;
-	std::cout << "| " << std::left << std::setw(3) << "2." << std::setw(23) << "1280x720.jpg" << " |" << std::endl;
-	std::cout << "| " << std::left << std::setw(3) << "3." << std::setw(23) << "1920x1080.jpg" << " |" << std::endl;
-	std::cout << "| " << std::left << std::setw(3) << "4." << std::setw(23) << "2560x1440.jpg" << " |" << std::endl;
-	std::cout << "| " << std::left << std::setw(3) << "5." << std::setw(23) << "3840x2160.jpg" << " |" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "1." << std::setw(23) << "640x480.jpg"
+			  << " |" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "2." << std::setw(23) << "1280x720.jpg"
+			  << " |" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "3." << std::setw(23) << "1920x1080.jpg"
+			  << " |" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "4." << std::setw(23) << "2560x1440.jpg"
+			  << " |" << std::endl;
+	std::cout << "| " << std::left << std::setw(3) << "5." << std::setw(23) << "3840x2160.jpg"
+			  << " |" << std::endl;
 	std::cout << "#~~~~~~~~~~~~~~~~~~~~~~~~~~~~#" << std::endl;
 	std::cout << "Select image to do canny edge detection : " << std::endl;
 	std::cin >> image_choice;
@@ -76,14 +81,6 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-bool image_equal(const cv::Mat &a, const cv::Mat &b)
-{
-	if ((a.rows != b.rows) || (a.cols != b.cols))
-		return false;
-	cv::Scalar s = sum(a - b);
-	return (s[0] == 0) && (s[1] == 0) && (s[2] == 0);
-}
-
 void doTransform(std::string file_path, int thd_per_blk)
 {
 	cv::Mat img_gray;
@@ -96,64 +93,15 @@ void doTransform(std::string file_path, int thd_per_blk)
 	int w = img_gray.cols;
 	int h = img_ori.rows;
 
-	while (1)
-	{
-		cv::Mat img_edge(h, w, CV_8UC1, cv::Scalar::all(0));
-		apply_canny(img_edge.data, img_gray.data, low_threshold, high_threshold, w, h, thd_per_blk);
+	cv::Mat img_edge(h, w, CV_8UC1, cv::Scalar::all(0));
+	apply_canny(img_edge.data, img_gray.data, low_threshold, high_threshold, w, h, thd_per_blk);
 
-		cv::imwrite(save_path, img_edge);
-		cv::Mat test_img_true = cv::imread(true_path, 1);
-		cv::Mat test_img_edge = cv::imread(save_path, 1);
+	cv::imwrite(save_path, img_edge);
 
-		if (image_equal(test_img_edge, test_img_true))
-		{
-			std::cout << "correct edge result" << std::endl;
-		}
+	// Visualize all
+	cv::imshow(CW_IMG_ORIGINAL, img_ori);
+	cv::imshow(CW_IMG_GRAY, img_gray);
+	cv::imshow(CW_IMG_EDGE, img_edge);
 
-		// Visualize all
-		cv::imshow(CW_IMG_ORIGINAL, img_ori);
-		cv::imshow(CW_IMG_GRAY, img_gray);
-		cv::imshow(CW_IMG_EDGE, img_edge);
-
-		char c = cv::waitKey(360000);
-
-		if (c == 'h')
-		{
-			if (high_threshold > 10)
-				high_threshold -= 5;
-			else
-				high_threshold -= 1;
-		}
-		if (c == 'H')
-		{
-			if (high_threshold >= 10)
-				high_threshold += 5;
-			else
-				high_threshold += 1;
-		}
-		if (c == 'l')
-		{
-			if (low_threshold > 10)
-				low_threshold -= 5;
-			else
-				low_threshold -= 1;
-		}
-		if (c == 'L')
-		{
-			if (low_threshold >= 10)
-				low_threshold += 5;
-			else
-				low_threshold += 1;
-		}
-		if (c == 's')
-		{
-			cv::imwrite("canny.png", img_edge);
-			std::cout << "write canny.png done..." << std::endl;
-		}
-
-		std::cout << low_threshold << ", " << high_threshold << std::endl;
-
-		if (c == 27)
-			break;
-	}
+	char c = cv::waitKey(360000);
 }
